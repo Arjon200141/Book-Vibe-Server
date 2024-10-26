@@ -61,6 +61,17 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/carts', async (req, res) => {
+      try {
+        const email = req.query.email;
+        const query = { email: email };
+        const result = await cartCollection.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Internal Server Error' });
+      }
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
