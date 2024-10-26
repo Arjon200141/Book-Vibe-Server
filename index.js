@@ -3,7 +3,6 @@ const cors = require('cors')
 require('dotenv').config();
 
 const app = express()
-
 const port = process.env.port || 5000;
 
 app.use(cors());
@@ -25,9 +24,40 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const bookCollection = client.db('Book-vibe').collection('books');
+    const upcomingCollection = client.db('Book-vibe').collection('upcoming');
+    const cartCollection = client.db('Book-vibe').collection('carts');
+    const reviewCollection = client.db('Book-vibe').collection('reviews');
+    const userCollection = client.db('Book-vibe').collection('users');
 
     app.get('/books', async (req, res) => {
       const result = await bookCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get('/upcoming', async (req, res) => {
+      const result = await upcomingCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get('/reviews', async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post('/carts', async (req, res) => {
+      const cartItem = req.body;
+      const result = await cartCollection.insertOne(cartItem);
+      res.send(result);
+    })
+
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: 'User already exists', insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
       res.send(result);
     });
 
