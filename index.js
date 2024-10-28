@@ -63,7 +63,7 @@ async function run() {
     };
 
     // Route to get all users (Admin only)
-    app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
+    app.get('/users',  async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -130,11 +130,48 @@ async function run() {
       res.send(result);
     });
 
-    // Route to get user's cart items
     app.get('/carts', async (req, res) => {
       try {
         const email = req.query.email;
         const result = await cartCollection.find({ email: email }).toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Internal Server Error' });
+      }
+    });
+
+    app.get('/books/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch('/books/:id', async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = { $set: item };
+      const result = await bookCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete('/books/:id', verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await bookCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Internal Server Error' });
+      }
+    });
+
+    app.delete('/carts/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await cartCollection.deleteOne(query);
         res.send(result);
       } catch (error) {
         res.status(500).send({ message: 'Internal Server Error' });
